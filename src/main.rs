@@ -155,19 +155,26 @@ static mut SEED: u32 = 0x0e0657c1;
 
 fn main() {
     //asm::bkpt();
+    let mut before = 0;
+    let mut after = 0;
 
     unsafe {
         (*DWT.get()).enable_cycle_counter();
         (*DWT.get()).cyccnt.write(0);
     }
     //asm::bkpt();
-
+    unsafe {
+        before = (*DWT.get()).cyccnt.read();
+    }
     // get a handle to the *host* standard output
     let mut stdout = hio::hstdout().unwrap();
 
     let wordarr: u32 = 0;
     let bytearr: u32 = 0;
+
     decode(wordarr, bytearr);
+
+
     writeln!(stdout, "Decoded string: ");
 
     unsafe {
@@ -176,11 +183,12 @@ fn main() {
         }
     }
     write!(stdout, "\n");
+    unsafe {
+        after = (*DWT.get()).cyccnt.read();
+    }
     // asm::bkpt();
     //  asm::bkpt();
-    unsafe {
-        write!(stdout, "{}", (*DWT.get()).cyccnt.read());
-    }
+    write!(stdout, "{}", (after - before));
 }
 
 fn decode(mut wordarr: u32, mut bytearr: u32) -> u32 {
